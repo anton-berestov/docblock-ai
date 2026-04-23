@@ -1,78 +1,92 @@
-# PHPDoc AI Generator
+# DocBlock AI
 
-A Visual Studio Code extension that automatically generates PHPDoc comments for your PHP functions and methods using OpenAI GPT models. Supports multiple documentation languages.
+Generate documentation comments for any function or method using **OpenAI GPT** or **GitHub Copilot** — directly from VS Code's context menu or command palette.
+
+Supports **9 programming languages** and **10 human languages** for generated text.
 
 ## Features
 
-- **Automatic PHPDoc Generation** — Select any PHP function or method and generate a complete PHPDoc comment in seconds.
-- **Multi-language Support** — Choose the language for generated comments: English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese, or Japanese.
-- **Model Selection** — Choose which OpenAI model to use (GPT-3.5 Turbo, GPT-4, GPT-4 Turbo, GPT-4o).
-- **Secure API Key Storage** — Your OpenAI API key is stored securely in VS Code's global settings.
+- **Right-click → Generate Documentation** — select a function, right-click, done
+- **Multi-language code support** — PHP, JavaScript, TypeScript, Python, Java, C#, Go, Ruby, Rust
+- **Correct format per language** — PHPDoc, JSDoc, TSDoc, docstrings, Javadoc, XML comments, GoDoc, YARD, Rustdoc
+- **Two AI providers** — OpenAI (GPT-3.5 / GPT-4 / GPT-4o) or GitHub Copilot (no extra API key needed)
+- **Documentation language** — write comments in English, Russian, Spanish, and 7 more languages
+- **Progress indicator** with cancellation support
 
 ## Requirements
 
-- Visual Studio Code 1.84.0 or higher
-- A valid OpenAI API key
+- VS Code 1.90.0 or higher
+- **OpenAI provider**: valid OpenAI API key
+- **Copilot provider**: active GitHub Copilot subscription
 
 ## Getting Started
 
 ### 1. Install the Extension
 
-Install **PHPDoc AI Generator** from the VS Code Marketplace.
+Install **DocBlock AI** from the VS Code Marketplace.
 
-### 2. Set Your OpenAI API Key
+### 2. Choose a Provider
 
-Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P` on Mac) and run:
+Open VS Code Settings (`Ctrl+,` / `Cmd+,`), search for **DocBlock AI**, and set:
 
-```
-PHPDoc AI Generator: Set OpenAI API Key
-```
+- **Provider**: `openai` or `copilot`
 
-Enter your OpenAI API key when prompted.
-
-### 3. Generate PHPDoc
-
-1. Open a PHP file in the editor.
-2. Select a function or method (highlight its entire body or just the signature).
-3. Open the Command Palette and run:
+If you choose OpenAI, run the command to set your API key:
 
 ```
-Generate PHPDoc
+DocBlock AI: Set OpenAI API Key
 ```
 
-The PHPDoc comment will be inserted automatically above the selected function.
+### 3. Generate Documentation
+
+1. Open any supported file (PHP, JS, TS, Python, etc.)
+2. Select the function or method you want to document
+3. Right-click → **DocBlock AI: Generate Documentation**
+
+Or use the Command Palette (`Ctrl+Shift+P`):
+```
+DocBlock AI: Generate Documentation
+```
 
 ## Extension Settings
 
 | Setting | Default | Description |
 |---|---|---|
-| `phpdoc-ai-generator.openaiApiKey` | `""` | Your OpenAI API key |
-| `phpdoc-ai-generator.language` | `"English"` | Language for generated PHPDoc comments |
-| `phpdoc-ai-generator.model` | `"gpt-3.5-turbo"` | OpenAI model to use |
+| `docblock-ai.provider` | `openai` | AI provider: `openai` or `copilot` |
+| `docblock-ai.openaiApiKey` | `""` | OpenAI API key (for OpenAI provider) |
+| `docblock-ai.model` | `gpt-3.5-turbo` | OpenAI model (`gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o`) |
+| `docblock-ai.language` | `English` | Language for generated documentation text |
 
-### Changing the Documentation Language
+## Supported Programming Languages
 
-1. Open VS Code Settings (`Ctrl+,` / `Cmd+,`).
-2. Search for **PHPDoc AI Generator**.
-3. Select the desired language from the **Language** dropdown.
+| Language | Format |
+|---|---|
+| PHP | PHPDoc |
+| JavaScript | JSDoc |
+| TypeScript | TSDoc |
+| Python | Google-style docstring |
+| Java | Javadoc |
+| C# | XML documentation comment |
+| Go | GoDoc comment |
+| Ruby | YARD documentation |
+| Rust | Rust doc comment |
 
-Supported languages: English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese, Japanese.
+## Documentation Languages
+
+English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese, Japanese.
 
 ## Known Issues
 
-- The extension only works with PHP files.
-- The selected text must contain at least one `function` keyword.
-- PHPDoc quality depends on how much context is selected and the capability of the chosen GPT model.
+- The selected text must contain a recognizable function/method definition.
+- Copilot provider availability depends on your GitHub Copilot subscription and the VS Code version.
 
 ## Release Notes
 
 ### 1.0.0
 
-- Multi-language support for generated comments
-- Model selection (GPT-3.5 Turbo, GPT-4, GPT-4 Turbo, GPT-4o)
-- Full English UI
-- Secure API key input (password field)
-
-## Feedback & Issues
-
-Found a bug or have a feature request? Please open an issue on the GitHub repository.
+- Initial release
+- Multi-language code support (9 languages)
+- OpenAI and GitHub Copilot providers
+- Documentation in 10 human languages
+- Right-click context menu integration
+- Progress indicator with cancellation

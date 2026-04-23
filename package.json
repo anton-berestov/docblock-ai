@@ -1,19 +1,23 @@
 {
-	"name": "phpdoc-ai-generator",
-	"displayName": "PHPDoc AI Generator",
-	"description": "Automatically generate PHPDoc comments for PHP functions and methods using OpenAI GPT. Supports multiple languages for documentation.",
-	"version": "1.0.1",
+	"name": "docblock-ai",
+	"displayName": "DocBlock AI",
+	"description": "Generate documentation comments for any programming language using OpenAI GPT or GitHub Copilot. Supports PHP, JS, TS, Python, Java, C#, Go, Ruby, Rust.",
+	"version": "1.0.0",
 	"publisher": "AntonBerestov",
 	"icon": "icon.png",
 	"keywords": [
-		"php",
-		"phpdoc",
 		"documentation",
+		"docblock",
+		"phpdoc",
+		"jsdoc",
+		"docstring",
 		"openai",
-		"gpt",
+		"copilot",
 		"ai",
-		"autocomplete",
-		"docblock"
+		"php",
+		"python",
+		"javascript",
+		"typescript"
 	],
 	"categories": [
 		"Programming Languages",
@@ -21,19 +25,43 @@
 		"Other"
 	],
 	"engines": {
-		"vscode": "^1.84.0"
+		"vscode": "^1.90.0"
 	},
 	"main": "./extension.js",
 	"contributes": {
 		"configuration": {
-			"title": "PHPDoc AI Generator",
+			"title": "DocBlock AI",
 			"properties": {
-				"phpdoc-ai-generator.openaiApiKey": {
+				"docblock-ai.provider": {
+					"type": "string",
+					"default": "openai",
+					"enum": [
+						"openai",
+						"copilot"
+					],
+					"enumDescriptions": [
+						"Use OpenAI API (requires API key)",
+						"Use GitHub Copilot (requires Copilot subscription)"
+					],
+					"description": "AI provider for documentation generation"
+				},
+				"docblock-ai.openaiApiKey": {
 					"type": "string",
 					"default": "",
-					"description": "Your OpenAI API key for PHPDoc AI Generator"
+					"description": "Your OpenAI API key (required when provider is OpenAI)"
 				},
-				"phpdoc-ai-generator.language": {
+				"docblock-ai.model": {
+					"type": "string",
+					"default": "gpt-3.5-turbo",
+					"enum": [
+						"gpt-3.5-turbo",
+						"gpt-4",
+						"gpt-4-turbo",
+						"gpt-4o"
+					],
+					"description": "OpenAI model to use (when provider is OpenAI)"
+				},
+				"docblock-ai.language": {
 					"type": "string",
 					"default": "English",
 					"enum": [
@@ -60,36 +88,25 @@
 						"Chinese (中文)",
 						"Japanese (日本語)"
 					],
-					"description": "Language for generated PHPDoc comments"
-				},
-				"phpdoc-ai-generator.model": {
-					"type": "string",
-					"default": "gpt-3.5-turbo",
-					"enum": [
-						"gpt-3.5-turbo",
-						"gpt-4",
-						"gpt-4-turbo",
-						"gpt-4o"
-					],
-					"description": "OpenAI model to use for PHPDoc generation"
+					"description": "Language for generated documentation text"
 				}
 			}
 		},
 		"commands": [
 			{
-				"command": "phpdoc-ai-generator.generatePHPDoc",
-				"title": "Generate PHPDoc"
+				"command": "docblock-ai.generateDoc",
+				"title": "DocBlock AI: Generate Documentation"
 			},
 			{
-				"command": "phpdoc-ai-generator.insertApiKey",
-				"title": "PHPDoc AI Generator: Set OpenAI API Key"
+				"command": "docblock-ai.insertApiKey",
+				"title": "DocBlock AI: Set OpenAI API Key"
 			}
 		],
 		"menus": {
 			"editor/context": [
 				{
-					"command": "phpdoc-ai-generator.generatePHPDoc",
-					"when": "editorLangId == php && editorHasSelection",
+					"command": "docblock-ai.generateDoc",
+					"when": "editorHasSelection && (editorLangId == php || editorLangId == javascript || editorLangId == typescript || editorLangId == python || editorLangId == java || editorLangId == csharp || editorLangId == go || editorLangId == ruby || editorLangId == rust)",
 					"group": "1_modification"
 				}
 			]
@@ -103,7 +120,7 @@
 	"devDependencies": {
 		"@types/mocha": "^10.0.6",
 		"@types/node": "18.x",
-		"@types/vscode": "^1.84.0",
+		"@types/vscode": "^1.90.0",
 		"@vscode/test-cli": "^0.0.4",
 		"@vscode/test-electron": "^2.3.8",
 		"eslint": "^8.54.0",

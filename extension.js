@@ -1,60 +1,122 @@
 const vscode = require('vscode')
 const OpenAI = require('openai')
 
+const DOC_FORMATS = {
+	php: {
+		name: 'PHPDoc',
+		check: /function\s+\w+/,
+		example: `/**\n * Short description.\n *\n * @param type $name Description\n * @return type\n * @throws ExceptionType Description\n */`,
+	},
+	javascript: {
+		name: 'JSDoc',
+		check: /function\s+\w+|=>\s*\{|const\s+\w+\s*=/,
+		example: `/**\n * Short description.\n *\n * @param {type} name - Description\n * @returns {type} Description\n * @throws {Error} Description\n */`,
+	},
+	typescript: {
+		name: 'TSDoc',
+		check: /function\s+\w+|=>\s*\{|const\s+\w+\s*=/,
+		example: `/**\n * Short description.\n *\n * @param name - Description\n * @returns Description\n * @throws Description\n */`,
+	},
+	python: {
+		name: 'Google-style docstring',
+		check: /def\s+\w+|class\s+\w+/,
+		example: `"""\nShort description.\n\nArgs:\n    name (type): Description.\n\nReturns:\n    type: Description.\n\nRaises:\n    ExceptionType: Description.\n"""`,
+	},
+	java: {
+		name: 'Javadoc',
+		check: /(public|private|protected|static)\s+\w+\s+\w+\s*\(/,
+		example: `/**\n * Short description.\n *\n * @param name Description\n * @return Description\n * @throws ExceptionType Description\n */`,
+	},
+	csharp: {
+		name: 'XML documentation comment',
+		check: /(public|private|protected|static)\s+\w+\s+\w+\s*\(/,
+		example: `/// <summary>\n/// Short description.\n/// </summary>\n/// <param name="name">Description</param>\n/// <returns>Description</returns>`,
+	},
+	go: {
+		name: 'GoDoc comment',
+		check: /func\s+\w+/,
+		example: `// FunctionName does something.\n//\n// It accepts name and returns something.`,
+	},
+	ruby: {
+		name: 'YARD documentation',
+		check: /def\s+\w+/,
+		example: `# Short description.\n#\n# @param name [Type] Description\n# @return [Type] Description`,
+	},
+	rust: {
+		name: 'Rust doc comment',
+		check: /fn\s+\w+/,
+		example: `/// Short description.\n///\n/// # Arguments\n///\n/// * \`name\` - Description\n///\n/// # Returns\n///\n/// Description`,
+	},
+}
+
+const SUPPORTED_LANG_IDS = Object.keys(DOC_FORMATS)
+
 function activate(context) {
 	let disposable = vscode.commands.registerCommand(
-		'phpdoc-ai-generator.generatePHPDoc',
+		'docblock-ai.generateDoc',
 		async function () {
 			const editor = vscode.window.activeTextEditor
 			if (!editor) {
-				vscode.window.showInformationMessage('No PHP function selected.')
+				vscode.window.showInformationMessage('No active editor.')
 				return
 			}
 
-			if (editor.document.languageId !== 'php') {
+			const langId = editor.document.languageId
+			if (!SUPPORTED_LANG_IDS.includes(langId)) {
 				vscode.window.showInformationMessage(
-					'PHPDoc AI Generator can only be used with PHP files.',
+					`DocBlock AI does not support "${langId}" files. Supported: ${SUPPORTED_LANG_IDS.join(', ')}.`,
 				)
 				return
 			}
 
-			const text = getText(editor)
-			if (!text || !text.includes('function')) {
+			const text = editor.document.getText(editor.selection)
+			if (!text.trim()) {
 				vscode.window.showInformationMessage(
-					'Please select a PHP function or method before generating PHPDoc.',
+					'Please select a function or method before generating documentation.',
 				)
 				return
 			}
 
-			const phpDoc = await send2GPT(text)
-			if (phpDoc && phpDoc !== false && phpDoc !== 'False') {
-				await insertPHPDoc(phpDoc, editor)
+			const format = DOC_FORMATS[langId]
+			if (format.check && !format.check.test(text)) {
+				vscode.window.showInformationMessage(
+					`Selected text does not appear to contain a ${langId} function or method.`,
+				)
+				return
 			}
+
+			await vscode.window.withProgress(
+				{
+					location: vscode.ProgressLocation.Notification,
+					title: 'DocBlock AI: generating documentation…',
+					cancellable: true,
+				},
+				async (_, token) => {
+					const doc = await generateDoc(text, langId, token)
+					if (doc && doc !== false) {
+						await insertDoc(doc, editor)
+					}
+				},
+			)
 		},
 	)
 
 	context.subscriptions.push(disposable)
 
 	let disposableKey = vscode.commands.registerCommand(
-		'phpdoc-ai-generator.insertApiKey',
+		'docblock-ai.insertApiKey',
 		async function () {
 			const apiKey = await vscode.window.showInputBox({
 				placeHolder: 'Enter your OpenAI API key here',
-				prompt: 'Enter your OpenAI API key to use with PHPDoc AI Generator',
+				prompt: 'Enter your OpenAI API key to use with DocBlock AI',
 				ignoreFocusOut: true,
 				password: true,
 			})
 
 			if (apiKey) {
-				const config = vscode.workspace.getConfiguration('phpdoc-ai-generator')
-				await config.update(
-					'openaiApiKey',
-					apiKey,
-					vscode.ConfigurationTarget.Global,
-				)
-				vscode.window.showInformationMessage(
-					'OpenAI API key saved successfully.',
-				)
+				const config = vscode.workspace.getConfiguration('docblock-ai')
+				await config.update('openaiApiKey', apiKey, vscode.ConfigurationTarget.Global)
+				vscode.window.showInformationMessage('OpenAI API key saved successfully.')
 			}
 		},
 	)
@@ -64,100 +126,110 @@ function activate(context) {
 
 function deactivate() {}
 
-function getText(editor) {
-	const selection = editor.selection
-	return editor.document.getText(selection)
+async function generateDoc(code, langId, cancellationToken) {
+	const config = vscode.workspace.getConfiguration('docblock-ai')
+	const provider = config.get('provider') || 'openai'
+	const docLanguage = config.get('language') || 'English'
+
+	if (provider === 'copilot') {
+		return sendToCopilot(code, langId, docLanguage, cancellationToken)
+	}
+	return sendToOpenAI(code, langId, docLanguage)
 }
 
-async function send2GPT(code) {
-	const config = vscode.workspace.getConfiguration('phpdoc-ai-generator')
+function buildPrompt(code, langId, docLanguage) {
+	const format = DOC_FORMATS[langId]
+	return `Return ONLY the ${format.name} documentation comment for the code below.
+Write ALL descriptive text in ${docLanguage} language.
+Do not include the function code itself — only the documentation comment block.
+Use best practices and include all relevant tags (params, return, throws/raises, etc.).
+
+Code:
+${code}
+
+Reference format (write content in ${docLanguage}):
+${format.example}`
+}
+
+async function sendToCopilot(code, langId, docLanguage, cancellationToken) {
+	let models
+	try {
+		models = await vscode.lm.selectChatModels({ vendor: 'copilot' })
+	} catch {
+		vscode.window.showErrorMessage(
+			'GitHub Copilot is not available. Please install and sign in to GitHub Copilot.',
+		)
+		return false
+	}
+
+	if (!models || models.length === 0) {
+		vscode.window.showErrorMessage(
+			'No Copilot models found. Make sure GitHub Copilot is installed and active.',
+		)
+		return false
+	}
+
+	const model = models[0]
+	const prompt = buildPrompt(code, langId, docLanguage)
+	const messages = [vscode.LanguageModelChatMessage.User(prompt)]
+
+	try {
+		const response = await model.sendRequest(messages, {}, cancellationToken)
+		let result = ''
+		for await (const chunk of response.text) {
+			result += chunk
+		}
+		return result.trim() || false
+	} catch (error) {
+		if (error.code === vscode.LanguageModelError.Blocked?.name) {
+			vscode.window.showErrorMessage('Request was blocked by Copilot content filter.')
+		} else if (error.name === 'Canceled') {
+			// user cancelled
+		} else {
+			vscode.window.showErrorMessage('Copilot error: ' + error.message)
+		}
+		return false
+	}
+}
+
+async function sendToOpenAI(code, langId, docLanguage) {
+	const config = vscode.workspace.getConfiguration('docblock-ai')
 	const apiKey = config.get('openaiApiKey')
-	const language = config.get('language') || 'English'
 	const model = config.get('model') || 'gpt-3.5-turbo'
 
 	if (!apiKey) {
 		vscode.window.showInformationMessage(
-			'Please configure your OpenAI API key in the PHPDoc AI Generator settings.',
+			'Please configure your OpenAI API key in DocBlock AI settings.',
 		)
 		return false
 	}
 
 	const openai = new OpenAI({ apiKey })
-
-	const exampleDoc =
-		language === 'English'
-			? `/**
-					* Calculates the sum of squares of an array
-					*
-					* Loops over each element, squares it and adds it to the total.
-					* Returns the total.
-					*
-					* Can also be implemented using array_reduce().
-					*
-					* @param array $arr
-					* @return int
-					* @throws Exception If an element in the array is not an integer
-					*/`
-			: `/**
-					* [Short description in ${language}]
-					*
-					* [Detailed description in ${language}]
-					*
-					* @param array $arr
-					* @return int
-					* @throws Exception [Exception description in ${language}]
-					*/`
+	const prompt = buildPrompt(code, langId, docLanguage)
 
 	try {
 		const response = await openai.chat.completions.create({
-			model: model,
-			messages: [
-				{
-					role: 'user',
-					content: `Return ONLY the PHPDoc comment (with maximum information and best documentation practices) for the function/method below.
-										Write ALL text inside the PHPDoc comment in ${language} language.
-
-										Function/method:
-										\n\n${code}\n\n
-
-										Use the snippet below as a reference format (but write content in ${language}):
-										${exampleDoc}
-										`,
-				},
-			],
+			model,
+			messages: [{ role: 'user', content: prompt }],
 		})
 
-		if (
-			response.choices &&
-			response.choices.length > 0 &&
-			response.choices[0].message.content.trim() !== ''
-		) {
-			return response.choices[0].message.content.trim()
-		} else {
-			vscode.window.showInformationMessage(
-				'Could not generate PHPDoc for this function/method.',
-			)
-			return false
-		}
+		const content = response.choices?.[0]?.message?.content?.trim()
+		if (content) return content
+
+		vscode.window.showInformationMessage('Could not generate documentation for this code.')
+		return false
 	} catch (error) {
-		console.error('Error sending request to OpenAI API:', error)
-		vscode.window.showErrorMessage(
-			'Error sending request to OpenAI API: ' + error.message,
-		)
+		console.error('OpenAI API error:', error)
+		vscode.window.showErrorMessage('OpenAI API error: ' + error.message)
 		return false
 	}
 }
 
-async function insertPHPDoc(phpDoc, editor) {
-	const selection = editor.selection
-	const start = new vscode.Position(selection.start.line, 0)
-
+async function insertDoc(doc, editor) {
+	const start = new vscode.Position(editor.selection.start.line, 0)
 	await editor.edit(editBuilder => {
-		editBuilder.insert(start, phpDoc + '\n')
+		editBuilder.insert(start, doc + '\n')
 	})
 }
 
-module.exports = {
-	activate,
-	deactivate,
-}
+module.exports = { activate, deactivate }
