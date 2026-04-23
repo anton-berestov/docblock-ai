@@ -3,7 +3,7 @@
   "displayName": "PHPDoc AI Generator",
   "description": "Automatically generate PHPDoc comments for PHP functions and methods using OpenAI GPT. Supports multiple languages for documentation.",
   "version": "1.0.0",
-  "publisher": "",
+  "publisher": "AntonBerestov",
   "icon": "icon.png",
   "keywords": [
     "php",
@@ -84,7 +84,16 @@
         "command": "phpdoc-ai-generator.insertApiKey",
         "title": "PHPDoc AI Generator: Set OpenAI API Key"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "phpdoc-ai-generator.generatePHPDoc",
+          "when": "editorLangId == php && editorHasSelection",
+          "group": "1_modification"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",
