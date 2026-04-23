@@ -1,115 +1,115 @@
 {
-  "name": "phpdoc-ai-generator",
-  "displayName": "PHPDoc AI Generator",
-  "description": "Automatically generate PHPDoc comments for PHP functions and methods using OpenAI GPT. Supports multiple languages for documentation.",
-  "version": "1.0.0",
-  "publisher": "AntonBerestov",
-  "icon": "icon.png",
-  "keywords": [
-    "php",
-    "phpdoc",
-    "documentation",
-    "openai",
-    "gpt",
-    "ai",
-    "autocomplete",
-    "docblock"
-  ],
-  "categories": [
-    "Programming Languages",
-    "Snippets",
-    "Other"
-  ],
-  "engines": {
-    "vscode": "^1.84.0"
-  },
-"main": "./extension.js",
-  "contributes": {
-    "configuration": {
-      "title": "PHPDoc AI Generator",
-      "properties": {
-        "phpdoc-ai-generator.openaiApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Your OpenAI API key for PHPDoc AI Generator"
-        },
-        "phpdoc-ai-generator.language": {
-          "type": "string",
-          "default": "English",
-          "enum": [
-            "English",
-            "Russian",
-            "Spanish",
-            "Italian",
-            "French",
-            "German",
-            "Portuguese",
-            "Polish",
-            "Chinese",
-            "Japanese"
-          ],
-          "enumDescriptions": [
-            "English",
-            "Russian (Русский)",
-            "Spanish (Español)",
-            "Italian (Italiano)",
-            "French (Français)",
-            "German (Deutsch)",
-            "Portuguese (Português)",
-            "Polish (Polski)",
-            "Chinese (中文)",
-            "Japanese (日本語)"
-          ],
-          "description": "Language for generated PHPDoc comments"
-        },
-        "phpdoc-ai-generator.model": {
-          "type": "string",
-          "default": "gpt-3.5-turbo",
-          "enum": [
-            "gpt-3.5-turbo",
-            "gpt-4",
-            "gpt-4-turbo",
-            "gpt-4o"
-          ],
-          "description": "OpenAI model to use for PHPDoc generation"
-        }
-      }
-    },
-    "commands": [
-      {
-        "command": "phpdoc-ai-generator.generatePHPDoc",
-        "title": "Generate PHPDoc"
-      },
-      {
-        "command": "phpdoc-ai-generator.insertApiKey",
-        "title": "PHPDoc AI Generator: Set OpenAI API Key"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "phpdoc-ai-generator.generatePHPDoc",
-          "when": "editorLangId == php && editorHasSelection",
-          "group": "1_modification"
-        }
-      ]
-    }
-  },
-  "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.6",
-    "@types/node": "18.x",
-    "@types/vscode": "^1.84.0",
-    "@vscode/test-cli": "^0.0.4",
-    "@vscode/test-electron": "^2.3.8",
-    "eslint": "^8.54.0",
-    "typescript": "^5.3.2"
-  },
-  "dependencies": {
-    "openai": "^4.20.1"
-  }
+	"name": "phpdoc-ai-generator",
+	"displayName": "PHPDoc AI Generator",
+	"description": "Automatically generate PHPDoc comments for PHP functions and methods using OpenAI GPT. Supports multiple languages for documentation.",
+	"version": "1.0.1",
+	"publisher": "AntonBerestov",
+	"icon": "icon.png",
+	"keywords": [
+		"php",
+		"phpdoc",
+		"documentation",
+		"openai",
+		"gpt",
+		"ai",
+		"autocomplete",
+		"docblock"
+	],
+	"categories": [
+		"Programming Languages",
+		"Snippets",
+		"Other"
+	],
+	"engines": {
+		"vscode": "^1.84.0"
+	},
+	"main": "./extension.js",
+	"contributes": {
+		"configuration": {
+			"title": "PHPDoc AI Generator",
+			"properties": {
+				"phpdoc-ai-generator.openaiApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Your OpenAI API key for PHPDoc AI Generator"
+				},
+				"phpdoc-ai-generator.language": {
+					"type": "string",
+					"default": "English",
+					"enum": [
+						"English",
+						"Russian",
+						"Spanish",
+						"Italian",
+						"French",
+						"German",
+						"Portuguese",
+						"Polish",
+						"Chinese",
+						"Japanese"
+					],
+					"enumDescriptions": [
+						"English",
+						"Russian (Русский)",
+						"Spanish (Español)",
+						"Italian (Italiano)",
+						"French (Français)",
+						"German (Deutsch)",
+						"Portuguese (Português)",
+						"Polish (Polski)",
+						"Chinese (中文)",
+						"Japanese (日本語)"
+					],
+					"description": "Language for generated PHPDoc comments"
+				},
+				"phpdoc-ai-generator.model": {
+					"type": "string",
+					"default": "gpt-3.5-turbo",
+					"enum": [
+						"gpt-3.5-turbo",
+						"gpt-4",
+						"gpt-4-turbo",
+						"gpt-4o"
+					],
+					"description": "OpenAI model to use for PHPDoc generation"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "phpdoc-ai-generator.generatePHPDoc",
+				"title": "Generate PHPDoc"
+			},
+			{
+				"command": "phpdoc-ai-generator.insertApiKey",
+				"title": "PHPDoc AI Generator: Set OpenAI API Key"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "phpdoc-ai-generator.generatePHPDoc",
+					"when": "editorLangId == php && editorHasSelection",
+					"group": "1_modification"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"lint": "eslint .",
+		"pretest": "npm run lint",
+		"test": "vscode-test"
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.6",
+		"@types/node": "18.x",
+		"@types/vscode": "^1.84.0",
+		"@vscode/test-cli": "^0.0.4",
+		"@vscode/test-electron": "^2.3.8",
+		"eslint": "^8.54.0",
+		"typescript": "^5.3.2"
+	},
+	"dependencies": {
+		"openai": "^4.20.1"
+	}
 }
