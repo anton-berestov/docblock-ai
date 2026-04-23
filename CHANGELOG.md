@@ -2,6 +2,12 @@
 
 All notable changes to DocBlock AI will be documented in this file.
 
+## [1.2.4] - 2026-04-23
+
+### Fixed
+
+- Generated comment opening normalized: `/***...` is now always corrected to `/**`
+
 ## [1.2.3] - 2026-04-23
 
 ### Fixed

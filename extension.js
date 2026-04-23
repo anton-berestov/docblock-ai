@@ -25,12 +25,14 @@ const DOC_FORMATS = {
 	},
 	java: {
 		name: 'Javadoc',
-		check: /(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|enum\s+\w+/,
+		check:
+			/(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|enum\s+\w+/,
 		example: `/**\n * Short description.\n *\n * @param name Description\n * @return Description\n * @throws ExceptionType Description\n */`,
 	},
 	csharp: {
 		name: 'XML documentation comment',
-		check: /(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|struct\s+\w+|enum\s+\w+/,
+		check:
+			/(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|struct\s+\w+|enum\s+\w+/,
 		example: `/// <summary>\n/// Short description.\n/// </summary>\n/// <param name="name">Description</param>\n/// <returns>Description</returns>`,
 	},
 	go: {
@@ -45,7 +47,8 @@ const DOC_FORMATS = {
 	},
 	rust: {
 		name: 'Rust doc comment',
-		check: /fn\s+\w+|struct\s+\w+|enum\s+\w+|trait\s+\w+|impl\s+\w+|let\s+\w+|const\s+\w+/,
+		check:
+			/fn\s+\w+|struct\s+\w+|enum\s+\w+|trait\s+\w+|impl\s+\w+|let\s+\w+|const\s+\w+/,
 		example: `/// Short description.\n///\n/// # Arguments\n///\n/// * \`name\` - Description\n///\n/// # Returns\n///\n/// Description`,
 	},
 }
@@ -118,8 +121,15 @@ function activate(context) {
 
 			if (apiKey) {
 				const config = vscode.workspace.getConfiguration('docblock-ai')
-				await config.update('openaiApiKey', apiKey, vscode.ConfigurationTarget.Global)
-				vscode.window.showInformationMessage('OpenAI API key saved successfully.')
+				await config.update(
+					'openaiApiKey',
+					apiKey,
+					vscode.ConfigurationTarget.Global,
+				)
+
+				vscode.window.showInformationMessage(
+					'OpenAI API key saved successfully.',
+				)
 			}
 		},
 	)
@@ -138,8 +148,14 @@ function activate(context) {
 
 			if (apiKey) {
 				const config = vscode.workspace.getConfiguration('docblock-ai')
-				await config.update('claudeApiKey', apiKey, vscode.ConfigurationTarget.Global)
-				vscode.window.showInformationMessage('Anthropic API key saved successfully.')
+				await config.update(
+					'claudeApiKey',
+					apiKey,
+					vscode.ConfigurationTarget.Global,
+				)
+				vscode.window.showInformationMessage(
+					'Anthropic API key saved successfully.',
+				)
 			}
 		},
 	)
@@ -166,7 +182,13 @@ async function generateDoc(code, langId, fileContext, cancellationToken) {
 	const docLanguage = config.get('language') || 'English'
 
 	if (provider === 'copilot') {
-		return sendToCopilot(code, langId, docLanguage, fileContext, cancellationToken)
+		return sendToCopilot(
+			code,
+			langId,
+			docLanguage,
+			fileContext,
+			cancellationToken,
+		)
 	}
 	if (provider === 'claude') {
 		return sendToClaude(code, langId, docLanguage, fileContext)
@@ -202,7 +224,13 @@ ${code}
 \`\`\``
 }
 
-async function sendToCopilot(code, langId, docLanguage, fileContext, cancellationToken) {
+async function sendToCopilot(
+	code,
+	langId,
+	docLanguage,
+	fileContext,
+	cancellationToken,
+) {
 	let models
 	try {
 		models = await vscode.lm.selectChatModels({ vendor: 'copilot' })
@@ -233,7 +261,9 @@ async function sendToCopilot(code, langId, docLanguage, fileContext, cancellatio
 		return result.trim() || false
 	} catch (error) {
 		if (error.code === vscode.LanguageModelError.Blocked?.name) {
-			vscode.window.showErrorMessage('Request was blocked by Copilot content filter.')
+			vscode.window.showErrorMessage(
+				'Request was blocked by Copilot content filter.',
+			)
 		} else if (error.name === 'Canceled') {
 			// user cancelled
 		} else {
@@ -268,7 +298,9 @@ async function sendToClaude(code, langId, docLanguage, fileContext) {
 		const content = response.content?.[0]?.text?.trim()
 		if (content) return content
 
-		vscode.window.showInformationMessage('Could not generate documentation for this code.')
+		vscode.window.showInformationMessage(
+			'Could not generate documentation for this code.',
+		)
 		return false
 	} catch (error) {
 		console.error('Anthropic API error:', error)
@@ -301,7 +333,9 @@ async function sendToOpenAI(code, langId, docLanguage, fileContext) {
 		const content = response.choices?.[0]?.message?.content?.trim()
 		if (content) return content
 
-		vscode.window.showInformationMessage('Could not generate documentation for this code.')
+		vscode.window.showInformationMessage(
+			'Could not generate documentation for this code.',
+		)
 		return false
 	} catch (error) {
 		console.error('OpenAI API error:', error)
@@ -312,9 +346,10 @@ async function sendToOpenAI(code, langId, docLanguage, fileContext) {
 
 function cleanDoc(doc) {
 	return doc
-		.replace(/^`{3}[\w]*\n?/, '')  // strip opening code fence
-		.replace(/`{3}$/, '')           // strip closing code fence
+		.replace(/^`{3}[\w]*\n?/, '') // strip opening code fence
+		.replace(/`{3}$/, '') // strip closing code fence
 		.replace(/^\/\s+\*\*/m, '/**') // fix "/ **" → "/**"
+		.replace(/^\/\*{3,}/m, '/**') // fix "/***..." → "/**"
 		.trim()
 }
 
@@ -328,7 +363,10 @@ async function insertDoc(doc, editor) {
 	}
 	const line = editor.document.lineAt(editor.selection.start.line)
 	const indent = line.text.match(/^(\s*)/)[1]
-	const indentedDoc = doc.split('\n').map(l => indent + l).join('\n')
+	const indentedDoc = doc
+		.split('\n')
+		.map(l => indent + l)
+		.join('\n')
 	const start = new vscode.Position(editor.selection.start.line, 0)
 	await editor.edit(editBuilder => {
 		editBuilder.insert(start, indentedDoc + '\n')

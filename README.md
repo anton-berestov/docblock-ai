@@ -93,6 +93,10 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 
 ## Release Notes
 
+### 1.2.4
+
+- Fixed: comment opening `/***...` is now always normalized to `/**`
+
 ### 1.2.3
 
 - Fixed: generated comment now inherits the indentation of the selected code
