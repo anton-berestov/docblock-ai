@@ -6,7 +6,8 @@ Supports **9 programming languages**, **10 human languages** for generated text,
 
 ## Features
 
-- **Right-click → Generate Documentation** — select a function, right-click, done
+- **Right-click → Generate Documentation** — select any code element, right-click, done
+- **Documents functions, classes, and variables** — methods, constructors, interfaces, constants, properties
 - **Multi-language code support** — PHP, JavaScript, TypeScript, Python, Java, C#, Go, Ruby, Rust
 - **Correct format per language** — PHPDoc, JSDoc, TSDoc, docstrings, Javadoc, XML comments, GoDoc, YARD, Rustdoc
 - **Three AI providers** — OpenAI (GPT-3.5 / GPT-4 / GPT-4o), GitHub Copilot (no extra API key needed), or Anthropic Claude (Haiku / Sonnet / Opus)
@@ -87,13 +88,15 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 
 ## Known Issues
 
-- The selected text must contain a recognizable function/method definition.
+- The selected text must contain a recognizable code element (function, class, or variable declaration).
 - Copilot provider availability depends on your GitHub Copilot subscription and the VS Code version.
 
 ## Release Notes
 
-### 1.2.0
+### 1.2.1
 
+- Added: Anthropic Claude provider (Haiku / Sonnet / Opus)
+- Added: support for documenting classes, interfaces, variables, constants, and properties
 - Fixed: error when the editor is closed during generation
 - Fixed: generated comment starting with `/ **` instead of `/**`
 - Changed: shorter, more concise documentation output

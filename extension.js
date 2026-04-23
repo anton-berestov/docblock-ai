@@ -5,47 +5,47 @@ const Anthropic = require('@anthropic-ai/sdk')
 const DOC_FORMATS = {
 	php: {
 		name: 'PHPDoc',
-		check: /function\s+\w+/,
+		check: /function\s+\w+|class\s+\w+|\$\w+\s*=/,
 		example: `/**\n * Short description.\n *\n * @param type $name Description\n * @return type\n * @throws ExceptionType Description\n */`,
 	},
 	javascript: {
 		name: 'JSDoc',
-		check: /function\s+\w+|=>\s*\{|const\s+\w+\s*=/,
+		check: /function\s+\w+|=>\s*\{|class\s+\w+|const\s+\w+|let\s+\w+|var\s+\w+/,
 		example: `/**\n * Short description.\n *\n * @param {type} name - Description\n * @returns {type} Description\n * @throws {Error} Description\n */`,
 	},
 	typescript: {
 		name: 'TSDoc',
-		check: /function\s+\w+|=>\s*\{|const\s+\w+\s*=/,
+		check: /function\s+\w+|=>\s*\{|class\s+\w+|const\s+\w+|let\s+\w+|var\s+\w+/,
 		example: `/**\n * Short description.\n *\n * @param name - Description\n * @returns Description\n * @throws Description\n */`,
 	},
 	python: {
 		name: 'Google-style docstring',
-		check: /def\s+\w+|class\s+\w+/,
+		check: /def\s+\w+|class\s+\w+|\w+\s*=/,
 		example: `"""\nShort description.\n\nArgs:\n    name (type): Description.\n\nReturns:\n    type: Description.\n\nRaises:\n    ExceptionType: Description.\n"""`,
 	},
 	java: {
 		name: 'Javadoc',
-		check: /(public|private|protected|static)\s+\w+\s+\w+\s*\(/,
+		check: /(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|enum\s+\w+/,
 		example: `/**\n * Short description.\n *\n * @param name Description\n * @return Description\n * @throws ExceptionType Description\n */`,
 	},
 	csharp: {
 		name: 'XML documentation comment',
-		check: /(public|private|protected|static)\s+\w+\s+\w+\s*\(/,
+		check: /(public|private|protected|static)\s+\w+[\s\w]*[({;=]|class\s+\w+|interface\s+\w+|struct\s+\w+|enum\s+\w+/,
 		example: `/// <summary>\n/// Short description.\n/// </summary>\n/// <param name="name">Description</param>\n/// <returns>Description</returns>`,
 	},
 	go: {
 		name: 'GoDoc comment',
-		check: /func\s+\w+/,
+		check: /func\s+\w+|type\s+\w+|var\s+\w+|const\s+\w+/,
 		example: `// FunctionName does something.\n//\n// It accepts name and returns something.`,
 	},
 	ruby: {
 		name: 'YARD documentation',
-		check: /def\s+\w+/,
+		check: /def\s+\w+|class\s+\w+|\w+\s*=/,
 		example: `# Short description.\n#\n# @param name [Type] Description\n# @return [Type] Description`,
 	},
 	rust: {
 		name: 'Rust doc comment',
-		check: /fn\s+\w+/,
+		check: /fn\s+\w+|struct\s+\w+|enum\s+\w+|trait\s+\w+|impl\s+\w+|let\s+\w+|const\s+\w+/,
 		example: `/// Short description.\n///\n/// # Arguments\n///\n/// * \`name\` - Description\n///\n/// # Returns\n///\n/// Description`,
 	},
 }
@@ -81,7 +81,7 @@ function activate(context) {
 			const format = DOC_FORMATS[langId]
 			if (format.check && !format.check.test(text)) {
 				vscode.window.showInformationMessage(
-					`Selected text does not appear to contain a ${langId} function or method.`,
+					`Selected text does not appear to contain a documentable ${langId} element (function, class, or variable).`,
 				)
 				return
 			}
@@ -177,23 +177,21 @@ async function generateDoc(code, langId, fileContext, cancellationToken) {
 function buildPrompt(code, langId, docLanguage, fileContext) {
 	const format = DOC_FORMATS[langId]
 	const contextBlock = fileContext
-		? `File context (code before the function — use it to understand the class, dependencies, and purpose):\n\`\`\`\n${fileContext}\n\`\`\`\n\n`
+		? `File context (code before the element — use it to understand the class, dependencies, and purpose):\n\`\`\`\n${fileContext}\n\`\`\`\n\n`
 		: ''
 
 	return `You are a senior software engineer writing ${format.name} documentation.
 
-Task: write a ${format.name} comment for the function/method below.
+Task: write a ${format.name} comment for the code element below. The element may be a function, method, class, interface, variable, constant, or property.
 
 Rules:
 - Return ONLY the documentation comment block, nothing else — no code, no explanation, no markdown fences
 - The comment must start exactly with the correct opening (/** for PHPDoc/JSDoc, """ for Python, // for Go, etc.)
 - Write ALL descriptive text in ${docLanguage} language
-- Description must be one short sentence summarizing what the function does
-- If it is a class/abstract class, list what subclasses must implement and what they can optionally override
-- For @return / @returns: list every possible return value with a clear explanation of when each occurs
-  Example: @return false|array<string, mixed>|null — false if server unknown, array on success, null if skipped
-- Include all @param tags with exact types and meaningful descriptions
-- Include @throws if exceptions are possible
+- Description must be one short sentence summarizing what the element does or represents
+- For functions and methods: include all @param tags with exact types and meaningful descriptions; for @return/@returns list every possible return value with a clear explanation of when each occurs; include @throws if exceptions are possible
+- For classes and interfaces: describe the purpose; if abstract, mention what subclasses must implement
+- For variables, constants, and properties: describe what the value represents and how it is used; include the type if the format supports it
 - Use the file context to understand the class hierarchy, properties, and dependencies
 
 ${contextBlock}Function/method to document:

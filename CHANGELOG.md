@@ -2,6 +2,13 @@
 
 All notable changes to DocBlock AI will be documented in this file.
 
+## [1.2.1] - 2026-04-23
+
+### Added
+
+- Support for documenting classes, interfaces, variables, constants, and properties in all 9 languages
+- Anthropic Claude provider (Haiku 4.5 / Sonnet 4.6 / Opus 4.7) with `DocBlock AI: Set Claude API Key` command
+
 ## [1.2.0] - 2026-04-23
 
 ### Fixed
