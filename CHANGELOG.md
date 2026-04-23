@@ -2,6 +2,13 @@
 
 All notable changes to DocBlock AI will be documented in this file.
 
+## [1.2.3] - 2026-04-23
+
+### Fixed
+
+- Generated comment now inherits the indentation of the selected code
+- Blank lines between tag groups (@param, @return, @throws) to match standard PHPDoc/JSDoc formatting
+
 ## [1.2.2] - 2026-04-23
 
 ### Changed

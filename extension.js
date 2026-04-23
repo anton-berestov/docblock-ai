@@ -191,6 +191,7 @@ Rules:
 - Description must be 2–3 short sentences: first sentence says what the element does, the next 1–2 sentences briefly explain the key details (inputs processed, main steps, notable behaviour). No more than that.
 - Wrap description lines at 80 characters — continue on the next comment line with the same prefix (e.g. " * " for PHPDoc)
 - For functions and methods: include all @param tags with exact types and meaningful descriptions; for @return/@returns list every possible return value with a clear explanation of when each occurs; include @throws if exceptions are possible
+- Separate each tag group with a blank comment line (e.g. " * " on its own line for PHPDoc/JSDoc): after all @param tags add a blank line before @return, then a blank line before @throws
 - For classes and interfaces: describe the purpose; if abstract, mention what subclasses must implement
 - For variables, constants, and properties: describe what the value represents and how it is used; include the type if the format supports it
 - Use the file context to understand the class hierarchy, properties, and dependencies
@@ -325,9 +326,12 @@ async function insertDoc(doc, editor) {
 		)
 		return
 	}
+	const line = editor.document.lineAt(editor.selection.start.line)
+	const indent = line.text.match(/^(\s*)/)[1]
+	const indentedDoc = doc.split('\n').map(l => indent + l).join('\n')
 	const start = new vscode.Position(editor.selection.start.line, 0)
 	await editor.edit(editBuilder => {
-		editBuilder.insert(start, doc + '\n')
+		editBuilder.insert(start, indentedDoc + '\n')
 	})
 }
 

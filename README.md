@@ -93,8 +93,10 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 
 ## Release Notes
 
-### 1.2.2
+### 1.2.3
 
+- Fixed: generated comment now inherits the indentation of the selected code
+- Fixed: blank lines between tag groups for correct PHPDoc/JSDoc formatting
 - Changed: description now generates 2–3 sentences with line wrapping at 80 characters
 
 ### 1.2.1
