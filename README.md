@@ -44,32 +44,33 @@ DocBlock AI: Set OpenAI API Key
 3. Right-click → **DocBlock AI: Generate Documentation**
 
 Or use the Command Palette (`Ctrl+Shift+P`):
+
 ```
 DocBlock AI: Generate Documentation
 ```
 
 ## Extension Settings
 
-| Setting | Default | Description |
-|---|---|---|
-| `docblock-ai.provider` | `openai` | AI provider: `openai` or `copilot` |
-| `docblock-ai.openaiApiKey` | `""` | OpenAI API key (for OpenAI provider) |
-| `docblock-ai.model` | `gpt-3.5-turbo` | OpenAI model (`gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o`) |
-| `docblock-ai.language` | `English` | Language for generated documentation text |
+| Setting                    | Default         | Description                                                      |
+| -------------------------- | --------------- | ---------------------------------------------------------------- |
+| `docblock-ai.provider`     | `openai`        | AI provider: `openai` or `copilot`                               |
+| `docblock-ai.openaiApiKey` | `""`            | OpenAI API key (for OpenAI provider)                             |
+| `docblock-ai.model`        | `gpt-3.5-turbo` | OpenAI model (`gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o`) |
+| `docblock-ai.language`     | `English`       | Language for generated documentation text                        |
 
 ## Supported Programming Languages
 
-| Language | Format |
-|---|---|
-| PHP | PHPDoc |
-| JavaScript | JSDoc |
-| TypeScript | TSDoc |
-| Python | Google-style docstring |
-| Java | Javadoc |
-| C# | XML documentation comment |
-| Go | GoDoc comment |
-| Ruby | YARD documentation |
-| Rust | Rust doc comment |
+| Language   | Format                    |
+| ---------- | ------------------------- |
+| PHP        | PHPDoc                    |
+| JavaScript | JSDoc                     |
+| TypeScript | TSDoc                     |
+| Python     | Google-style docstring    |
+| Java       | Javadoc                   |
+| C#         | XML documentation comment |
+| Go         | GoDoc comment             |
+| Ruby       | YARD documentation        |
+| Rust       | Rust doc comment          |
 
 ## Documentation Languages
 
@@ -82,7 +83,7 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 
 ## Release Notes
 
-### 1.0.0
+### 1.1.0
 
 - Initial release
 - Multi-language code support (9 languages)
