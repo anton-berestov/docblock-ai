@@ -2,7 +2,7 @@
 	"name": "docblock-ai",
 	"displayName": "DocBlock AI",
 	"description": "Generate documentation comments for any programming language using OpenAI GPT or GitHub Copilot. Supports PHP, JS, TS, Python, Java, C#, Go, Ruby, Rust.",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"publisher": "AntonBerestov",
 	"icon": "icon.png",
 	"keywords": [

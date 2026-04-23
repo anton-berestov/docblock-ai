@@ -2,6 +2,12 @@
 
 All notable changes to DocBlock AI will be documented in this file.
 
+## [1.2.2] - 2026-04-23
+
+### Changed
+
+- Description now generates 2–3 sentences with line wrapping at 80 characters
+
 ## [1.2.1] - 2026-04-23
 
 ### Added

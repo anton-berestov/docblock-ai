@@ -188,7 +188,8 @@ Rules:
 - Return ONLY the documentation comment block, nothing else — no code, no explanation, no markdown fences
 - The comment must start exactly with the correct opening (/** for PHPDoc/JSDoc, """ for Python, // for Go, etc.)
 - Write ALL descriptive text in ${docLanguage} language
-- Description must be one short sentence summarizing what the element does or represents
+- Description must be 2–3 short sentences: first sentence says what the element does, the next 1–2 sentences briefly explain the key details (inputs processed, main steps, notable behaviour). No more than that.
+- Wrap description lines at 80 characters — continue on the next comment line with the same prefix (e.g. " * " for PHPDoc)
 - For functions and methods: include all @param tags with exact types and meaningful descriptions; for @return/@returns list every possible return value with a clear explanation of when each occurs; include @throws if exceptions are possible
 - For classes and interfaces: describe the purpose; if abstract, mention what subclasses must implement
 - For variables, constants, and properties: describe what the value represents and how it is used; include the type if the format supports it

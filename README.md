@@ -93,6 +93,10 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 
 ## Release Notes
 
+### 1.2.2
+
+- Changed: description now generates 2–3 sentences with line wrapping at 80 characters
+
 ### 1.2.1
 
 - Added: Anthropic Claude provider (Haiku / Sonnet / Opus)
