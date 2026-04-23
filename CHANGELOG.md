@@ -2,6 +2,17 @@
 
 All notable changes to DocBlock AI will be documented in this file.
 
+## [1.2.0] - 2026-04-23
+
+### Fixed
+
+- Error "TextEditor#edit not possible on closed editors" when the file is closed during generation
+- Generated comment incorrectly starting with `/ **` instead of `/**`
+
+### Changed
+
+- Shorter documentation output: one concise summary sentence instead of a two-paragraph description
+
 ## [1.1.0] - 2026-04-23
 
 ### Added

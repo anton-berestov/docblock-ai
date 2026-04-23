@@ -1,5 +1,6 @@
 const vscode = require('vscode')
 const OpenAI = require('openai')
+const Anthropic = require('@anthropic-ai/sdk')
 
 const DOC_FORMATS = {
 	php: {
@@ -124,6 +125,26 @@ function activate(context) {
 	)
 
 	context.subscriptions.push(disposableKey)
+
+	let disposableClaudeKey = vscode.commands.registerCommand(
+		'docblock-ai.insertClaudeApiKey',
+		async function () {
+			const apiKey = await vscode.window.showInputBox({
+				placeHolder: 'Enter your Anthropic API key here',
+				prompt: 'Enter your Anthropic API key to use Claude with DocBlock AI',
+				ignoreFocusOut: true,
+				password: true,
+			})
+
+			if (apiKey) {
+				const config = vscode.workspace.getConfiguration('docblock-ai')
+				await config.update('claudeApiKey', apiKey, vscode.ConfigurationTarget.Global)
+				vscode.window.showInformationMessage('Anthropic API key saved successfully.')
+			}
+		},
+	)
+
+	context.subscriptions.push(disposableClaudeKey)
 }
 
 function deactivate() {}
@@ -147,6 +168,9 @@ async function generateDoc(code, langId, fileContext, cancellationToken) {
 	if (provider === 'copilot') {
 		return sendToCopilot(code, langId, docLanguage, fileContext, cancellationToken)
 	}
+	if (provider === 'claude') {
+		return sendToClaude(code, langId, docLanguage, fileContext)
+	}
 	return sendToOpenAI(code, langId, docLanguage, fileContext)
 }
 
@@ -164,9 +188,7 @@ Rules:
 - Return ONLY the documentation comment block, nothing else — no code, no explanation, no markdown fences
 - The comment must start exactly with the correct opening (/** for PHPDoc/JSDoc, """ for Python, // for Go, etc.)
 - Write ALL descriptive text in ${docLanguage} language
-- Description must have two parts:
-    1. One short sentence summarizing what the function does
-    2. A second paragraph explaining HOW it works (logic, steps, retries, conditions, edge cases)
+- Description must be one short sentence summarizing what the function does
 - If it is a class/abstract class, list what subclasses must implement and what they can optionally override
 - For @return / @returns: list every possible return value with a clear explanation of when each occurs
   Example: @return false|array<string, mixed>|null — false if server unknown, array on success, null if skipped
@@ -221,6 +243,40 @@ async function sendToCopilot(code, langId, docLanguage, fileContext, cancellatio
 	}
 }
 
+async function sendToClaude(code, langId, docLanguage, fileContext) {
+	const config = vscode.workspace.getConfiguration('docblock-ai')
+	const apiKey = config.get('claudeApiKey')
+	const model = config.get('claudeModel') || 'claude-sonnet-4-6'
+
+	if (!apiKey) {
+		vscode.window.showInformationMessage(
+			'Please configure your Anthropic API key in DocBlock AI settings.',
+		)
+		return false
+	}
+
+	const client = new Anthropic.default({ apiKey })
+	const prompt = buildPrompt(code, langId, docLanguage, fileContext)
+
+	try {
+		const response = await client.messages.create({
+			model,
+			max_tokens: 1024,
+			messages: [{ role: 'user', content: prompt }],
+		})
+
+		const content = response.content?.[0]?.text?.trim()
+		if (content) return content
+
+		vscode.window.showInformationMessage('Could not generate documentation for this code.')
+		return false
+	} catch (error) {
+		console.error('Anthropic API error:', error)
+		vscode.window.showErrorMessage('Anthropic API error: ' + error.message)
+		return false
+	}
+}
+
 async function sendToOpenAI(code, langId, docLanguage, fileContext) {
 	const config = vscode.workspace.getConfiguration('docblock-ai')
 	const apiKey = config.get('openaiApiKey')
@@ -254,7 +310,22 @@ async function sendToOpenAI(code, langId, docLanguage, fileContext) {
 	}
 }
 
+function cleanDoc(doc) {
+	return doc
+		.replace(/^`{3}[\w]*\n?/, '')  // strip opening code fence
+		.replace(/`{3}$/, '')           // strip closing code fence
+		.replace(/^\/\s+\*\*/m, '/**') // fix "/ **" → "/**"
+		.trim()
+}
+
 async function insertDoc(doc, editor) {
+	doc = cleanDoc(doc)
+	if (editor.document.isClosed) {
+		vscode.window.showErrorMessage(
+			'DocBlock AI: the editor was closed before the documentation could be inserted.',
+		)
+		return
+	}
 	const start = new vscode.Position(editor.selection.start.line, 0)
 	await editor.edit(editBuilder => {
 		editBuilder.insert(start, doc + '\n')

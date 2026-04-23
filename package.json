@@ -2,7 +2,7 @@
 	"name": "docblock-ai",
 	"displayName": "DocBlock AI",
 	"description": "Generate documentation comments for any programming language using OpenAI GPT or GitHub Copilot. Supports PHP, JS, TS, Python, Java, C#, Go, Ruby, Rust.",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "AntonBerestov",
 	"icon": "icon.png",
 	"keywords": [
@@ -37,11 +37,13 @@
 					"default": "openai",
 					"enum": [
 						"openai",
-						"copilot"
+						"copilot",
+						"claude"
 					],
 					"enumDescriptions": [
 						"Use OpenAI API (requires API key)",
-						"Use GitHub Copilot (requires Copilot subscription)"
+						"Use GitHub Copilot (requires Copilot subscription)",
+						"Use Anthropic Claude API (requires API key)"
 					],
 					"description": "AI provider for documentation generation"
 				},
@@ -60,6 +62,26 @@
 						"gpt-4o"
 					],
 					"description": "OpenAI model to use (when provider is OpenAI)"
+				},
+				"docblock-ai.claudeApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Your Anthropic API key (required when provider is Claude)"
+				},
+				"docblock-ai.claudeModel": {
+					"type": "string",
+					"default": "claude-sonnet-4-6",
+					"enum": [
+						"claude-haiku-4-5-20251001",
+						"claude-sonnet-4-6",
+						"claude-opus-4-7"
+					],
+					"enumDescriptions": [
+						"Claude Haiku 4.5 — fastest, most affordable",
+						"Claude Sonnet 4.6 — balanced speed and quality",
+						"Claude Opus 4.7 — most capable"
+					],
+					"description": "Anthropic Claude model to use (when provider is Claude)"
 				},
 				"docblock-ai.language": {
 					"type": "string",
@@ -100,6 +122,10 @@
 			{
 				"command": "docblock-ai.insertApiKey",
 				"title": "DocBlock AI: Set OpenAI API Key"
+			},
+			{
+				"command": "docblock-ai.insertClaudeApiKey",
+				"title": "DocBlock AI: Set Claude API Key"
 			}
 		],
 		"menus": {
@@ -127,6 +153,7 @@
 		"typescript": "^5.3.2"
 	},
 	"dependencies": {
+		"@anthropic-ai/sdk": "^0.90.0",
 		"openai": "^4.20.1"
 	}
 }

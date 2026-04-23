@@ -2,14 +2,14 @@
 
 Generate documentation comments for any function or method using **OpenAI GPT** or **GitHub Copilot** — directly from VS Code's context menu or command palette.
 
-Supports **9 programming languages** and **10 human languages** for generated text.
+Supports **9 programming languages**, **10 human languages** for generated text, and **3 AI providers**: OpenAI, GitHub Copilot, and Anthropic Claude.
 
 ## Features
 
 - **Right-click → Generate Documentation** — select a function, right-click, done
 - **Multi-language code support** — PHP, JavaScript, TypeScript, Python, Java, C#, Go, Ruby, Rust
 - **Correct format per language** — PHPDoc, JSDoc, TSDoc, docstrings, Javadoc, XML comments, GoDoc, YARD, Rustdoc
-- **Two AI providers** — OpenAI (GPT-3.5 / GPT-4 / GPT-4o) or GitHub Copilot (no extra API key needed)
+- **Three AI providers** — OpenAI (GPT-3.5 / GPT-4 / GPT-4o), GitHub Copilot (no extra API key needed), or Anthropic Claude (Haiku / Sonnet / Opus)
 - **Documentation language** — write comments in English, Russian, Spanish, and 7 more languages
 - **Progress indicator** with cancellation support
 
@@ -18,6 +18,7 @@ Supports **9 programming languages** and **10 human languages** for generated te
 - VS Code 1.90.0 or higher
 - **OpenAI provider**: valid OpenAI API key
 - **Copilot provider**: active GitHub Copilot subscription
+- **Claude provider**: valid Anthropic API key
 
 ## Getting Started
 
@@ -37,6 +38,12 @@ If you choose OpenAI, run the command to set your API key:
 DocBlock AI: Set OpenAI API Key
 ```
 
+If you choose Claude, run:
+
+```
+DocBlock AI: Set Claude API Key
+```
+
 ### 3. Generate Documentation
 
 1. Open any supported file (PHP, JS, TS, Python, etc.)
@@ -51,12 +58,14 @@ DocBlock AI: Generate Documentation
 
 ## Extension Settings
 
-| Setting                    | Default         | Description                                                      |
-| -------------------------- | --------------- | ---------------------------------------------------------------- |
-| `docblock-ai.provider`     | `openai`        | AI provider: `openai` or `copilot`                               |
-| `docblock-ai.openaiApiKey` | `""`            | OpenAI API key (for OpenAI provider)                             |
-| `docblock-ai.model`        | `gpt-3.5-turbo` | OpenAI model (`gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o`) |
-| `docblock-ai.language`     | `English`       | Language for generated documentation text                        |
+| Setting                      | Default               | Description                                                        |
+| ---------------------------- | --------------------- | ------------------------------------------------------------------ |
+| `docblock-ai.provider`       | `openai`              | AI provider: `openai`, `copilot`, or `claude`                      |
+| `docblock-ai.openaiApiKey`   | `""`                  | OpenAI API key (for OpenAI provider)                               |
+| `docblock-ai.model`          | `gpt-3.5-turbo`       | OpenAI model (`gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o`)  |
+| `docblock-ai.claudeApiKey`   | `""`                  | Anthropic API key (for Claude provider)                            |
+| `docblock-ai.claudeModel`    | `claude-sonnet-4-6`   | Claude model (`claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-7`) |
+| `docblock-ai.language`       | `English`             | Language for generated documentation text                          |
 
 ## Supported Programming Languages
 
@@ -82,6 +91,12 @@ English, Russian, Spanish, Italian, French, German, Portuguese, Polish, Chinese,
 - Copilot provider availability depends on your GitHub Copilot subscription and the VS Code version.
 
 ## Release Notes
+
+### 1.2.0
+
+- Fixed: error when the editor is closed during generation
+- Fixed: generated comment starting with `/ **` instead of `/**`
+- Changed: shorter, more concise documentation output
 
 ### 1.1.0
 
