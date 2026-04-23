@@ -85,6 +85,8 @@ function activate(context) {
 				return
 			}
 
+			const fileContext = getFileContext(editor)
+
 			await vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
@@ -92,7 +94,7 @@ function activate(context) {
 					cancellable: true,
 				},
 				async (_, token) => {
-					const doc = await generateDoc(text, langId, token)
+					const doc = await generateDoc(text, langId, fileContext, token)
 					if (doc && doc !== false) {
 						await insertDoc(doc, editor)
 					}
@@ -126,32 +128,59 @@ function activate(context) {
 
 function deactivate() {}
 
-async function generateDoc(code, langId, cancellationToken) {
+// Returns up to 100 lines before the selection as file context (class, imports, etc.)
+function getFileContext(editor) {
+	const sel = editor.selection
+	const startLine = Math.max(0, sel.start.line - 100)
+	const contextRange = new vscode.Range(
+		new vscode.Position(startLine, 0),
+		new vscode.Position(sel.start.line, 0),
+	)
+	return editor.document.getText(contextRange).trim()
+}
+
+async function generateDoc(code, langId, fileContext, cancellationToken) {
 	const config = vscode.workspace.getConfiguration('docblock-ai')
 	const provider = config.get('provider') || 'openai'
 	const docLanguage = config.get('language') || 'English'
 
 	if (provider === 'copilot') {
-		return sendToCopilot(code, langId, docLanguage, cancellationToken)
+		return sendToCopilot(code, langId, docLanguage, fileContext, cancellationToken)
 	}
-	return sendToOpenAI(code, langId, docLanguage)
+	return sendToOpenAI(code, langId, docLanguage, fileContext)
 }
 
-function buildPrompt(code, langId, docLanguage) {
+function buildPrompt(code, langId, docLanguage, fileContext) {
 	const format = DOC_FORMATS[langId]
-	return `Return ONLY the ${format.name} documentation comment for the code below.
-Write ALL descriptive text in ${docLanguage} language.
-Do not include the function code itself — only the documentation comment block.
-Use best practices and include all relevant tags (params, return, throws/raises, etc.).
+	const contextBlock = fileContext
+		? `File context (code before the function — use it to understand the class, dependencies, and purpose):\n\`\`\`\n${fileContext}\n\`\`\`\n\n`
+		: ''
 
-Code:
+	return `You are a senior software engineer writing ${format.name} documentation.
+
+Task: write a ${format.name} comment for the function/method below.
+
+Rules:
+- Return ONLY the documentation comment block, nothing else — no code, no explanation, no markdown fences
+- The comment must start exactly with the correct opening (/** for PHPDoc/JSDoc, """ for Python, // for Go, etc.)
+- Write ALL descriptive text in ${docLanguage} language
+- Description must have two parts:
+    1. One short sentence summarizing what the function does
+    2. A second paragraph explaining HOW it works (logic, steps, retries, conditions, edge cases)
+- If it is a class/abstract class, list what subclasses must implement and what they can optionally override
+- For @return / @returns: list every possible return value with a clear explanation of when each occurs
+  Example: @return false|array<string, mixed>|null — false if server unknown, array on success, null if skipped
+- Include all @param tags with exact types and meaningful descriptions
+- Include @throws if exceptions are possible
+- Use the file context to understand the class hierarchy, properties, and dependencies
+
+${contextBlock}Function/method to document:
+\`\`\`
 ${code}
-
-Reference format (write content in ${docLanguage}):
-${format.example}`
+\`\`\``
 }
 
-async function sendToCopilot(code, langId, docLanguage, cancellationToken) {
+async function sendToCopilot(code, langId, docLanguage, fileContext, cancellationToken) {
 	let models
 	try {
 		models = await vscode.lm.selectChatModels({ vendor: 'copilot' })
@@ -170,7 +199,7 @@ async function sendToCopilot(code, langId, docLanguage, cancellationToken) {
 	}
 
 	const model = models[0]
-	const prompt = buildPrompt(code, langId, docLanguage)
+	const prompt = buildPrompt(code, langId, docLanguage, fileContext)
 	const messages = [vscode.LanguageModelChatMessage.User(prompt)]
 
 	try {
@@ -192,7 +221,7 @@ async function sendToCopilot(code, langId, docLanguage, cancellationToken) {
 	}
 }
 
-async function sendToOpenAI(code, langId, docLanguage) {
+async function sendToOpenAI(code, langId, docLanguage, fileContext) {
 	const config = vscode.workspace.getConfiguration('docblock-ai')
 	const apiKey = config.get('openaiApiKey')
 	const model = config.get('model') || 'gpt-3.5-turbo'
@@ -205,7 +234,7 @@ async function sendToOpenAI(code, langId, docLanguage) {
 	}
 
 	const openai = new OpenAI({ apiKey })
-	const prompt = buildPrompt(code, langId, docLanguage)
+	const prompt = buildPrompt(code, langId, docLanguage, fileContext)
 
 	try {
 		const response = await openai.chat.completions.create({
